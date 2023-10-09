@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>ParseEntityTagHeaderValue-20231006-145332</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.8, macOS Sonoma 14.0 (23A344) [Darwin 23.0.0]
+Apple M1 Max, 1 CPU, 10 logical and 10 physical cores
+.NET SDK 7.0.401
+  [Host]     : .NET 7.0.11 (7.0.1123.42427), Arm64 RyuJIT AdvSIMD
+  DefaultJob : .NET 7.0.11 (7.0.1123.42427), Arm64 RyuJIT AdvSIMD
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method  </th><th>Value         </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Gen0</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>UsingString</td><td>W/&quot;dm(...)Jw==&quot; [32]</td><td>148.8 ns</td><td>0.30 ns</td><td>0.25 ns</td><td>1.00</td><td>0.0057</td><td>368 B</td><td>1.00</td>
+</tr><tr><td>UsingSubString</td><td>W/&quot;dm(...)Jw==&quot; [32]</td><td>134.5 ns</td><td>0.10 ns</td><td>0.08 ns</td><td>0.90</td><td>0.0043</td><td>280 B</td><td>0.76</td>
+</tr><tr><td>UsingCharArray</td><td>W/&quot;dm(...)Jw==&quot; [32]</td><td>134.5 ns</td><td>0.10 ns</td><td>0.09 ns</td><td>0.90</td><td>0.0043</td><td>280 B</td><td>0.76</td>
+</tr><tr><td>UsingMemory</td><td>W/&quot;dm(...)Jw==&quot; [32]</td><td>137.2 ns</td><td>0.12 ns</td><td>0.09 ns</td><td>0.92</td><td>0.0045</td><td>288 B</td><td>0.78</td>
+</tr><tr><td>UsingString</td><td>W/&quot;dmVyc2lvbicwJw==&quot;</td><td>116.5 ns</td><td>0.35 ns</td><td>0.31 ns</td><td>1.00</td><td>0.0043</td><td>272 B</td><td>1.00</td>
+</tr><tr><td>UsingSubString</td><td>W/&quot;dmVyc2lvbicwJw==&quot;</td><td>103.8 ns</td><td>0.11 ns</td><td>0.09 ns</td><td>0.89</td><td>0.0032</td><td>208 B</td><td>0.76</td>
+</tr><tr><td>UsingCharArray</td><td>W/&quot;dmVyc2lvbicwJw==&quot;</td><td>103.5 ns</td><td>0.10 ns</td><td>0.09 ns</td><td>0.89</td><td>0.0032</td><td>208 B</td><td>0.76</td>
+</tr><tr><td>UsingMemory</td><td>W/&quot;dmVyc2lvbicwJw==&quot;</td><td>106.8 ns</td><td>0.11 ns</td><td>0.09 ns</td><td>0.92</td><td>0.0033</td><td>216 B</td><td>0.79</td>
+</tr><tr><td>UsingString</td><td>W/&quot;dm(...)Jw==&quot; [24]</td><td>126.5 ns</td><td>1.05 ns</td><td>0.98 ns</td><td>1.00</td><td>0.0045</td><td>296 B</td><td>1.00</td>
+</tr><tr><td>UsingSubString</td><td>W/&quot;dm(...)Jw==&quot; [24]</td><td>114.4 ns</td><td>0.50 ns</td><td>0.44 ns</td><td>0.90</td><td>0.0036</td><td>224 B</td><td>0.76</td>
+</tr><tr><td>UsingCharArray</td><td>W/&quot;dm(...)Jw==&quot; [24]</td><td>113.3 ns</td><td>0.12 ns</td><td>0.09 ns</td><td>0.90</td><td>0.0036</td><td>224 B</td><td>0.76</td>
+</tr><tr><td>UsingMemory</td><td>W/&quot;dm(...)Jw==&quot; [24]</td><td>115.8 ns</td><td>0.09 ns</td><td>0.07 ns</td><td>0.91</td><td>0.0037</td><td>232 B</td><td>0.78</td>
+</tr></tbody></table>
+</body>
+</html>

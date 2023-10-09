@@ -7,12 +7,27 @@ using Microsoft.Net.Http.Headers;
 CompareOutput();
 
 var summary = BenchmarkRunner.Run<CreateEntityTagHeaderValue>();
+return;
 
 [Conditional("DEBUG")]
 static void CompareOutput()
 {
     Console.WriteLine("Comparing output...");
+
+    var simpleBits = new CreateEntityTagHeaderValue { Value = 25645645634}.StraightToBase64();
+    Debug.Assert(25645645634UL == new ParseEntityTagHeaderValue { Value = "W/\"Qn+Z+AUAAAA=\""}.ParseStraightBase64());
+    simpleBits = new CreateEntityTagHeaderValue { Value = ulong.MaxValue}.StraightToBase64();
+    Debug.Assert(ulong.MaxValue == new ParseEntityTagHeaderValue { Value = "W/\"//////////8=\""}.ParseStraightBase64());
     
+    var value = 1234UL;
+    var header = new CreateEntityTagHeaderValue { Value = value}.UsingString();
+    var etag = header.ToString();
+    var parsed = new ParseEntityTagHeaderValue { Value = etag }.UsingString();
+    Debug.Assert(Convert.ToUInt64(parsed) == value);
+    Debug.Assert(Convert.ToUInt64(new ParseEntityTagHeaderValue { Value = etag }.UsingSubString()) == value);
+    Debug.Assert(Convert.ToUInt64(new ParseEntityTagHeaderValue { Value = etag }.UsingCharArray()) == value);
+    Debug.Assert(Convert.ToUInt64(new ParseEntityTagHeaderValue { Value = etag }.UsingMemory()) == value);
+
     var strings = new CreateEntityTagHeaderValue { Value = ulong.MaxValue }.UsingString();
     var spans = new CreateEntityTagHeaderValue { Value = ulong.MaxValue }.UsingSpans();
     Debug.Assert(strings.ToString() == spans.ToString());
@@ -23,6 +38,68 @@ static void CompareOutput()
 }
 
 [MemoryDiagnoser]
+public class ParseEntityTagHeaderValue
+{
+    [Params("W/\"dmVyc2lvbicwJw==\"", "W/\"dmVyc2lvbicxMjM0Jw==\"", "W/\"dmVyc2lvbic0Mjk0OTY3Mjk1Jw==\"")] public string Value { get; set; }
+    
+    [Benchmark(Baseline = true)]
+    public string UsingString()
+    {
+        var etagHeaderValue = EntityTagHeaderValue.Parse(Value);
+        
+        var base64 = etagHeaderValue.Tag.ToString().Trim('\"');
+        var bytes = Convert.FromBase64String(base64);
+        var tag = Encoding.UTF8.GetString(bytes);
+        return tag[8..^1];
+    }
+    
+    [Benchmark]
+    public string UsingSubString()
+    {
+        var etagHeaderValue = EntityTagHeaderValue.Parse(Value);
+        
+        var base64 = etagHeaderValue.Tag.Substring(1, etagHeaderValue.Tag.Length - 2);
+        var bytes = Convert.FromBase64String(base64);
+        var tag = Encoding.UTF8.GetString(bytes);
+        return tag[8..^1];
+    }
+    
+    [Benchmark]
+    public string UsingCharArray()
+    {
+        var etagHeaderValue = EntityTagHeaderValue.Parse(Value);
+
+        var base64 = etagHeaderValue.Tag.AsSpan(1, etagHeaderValue.Tag.Length - 2);
+        var base64Array = base64.ToArray();
+        var bytes = Convert.FromBase64CharArray(base64Array, 0, base64Array.Length);
+        var tag = Encoding.UTF8.GetString(bytes);
+        return tag[8..^1];
+    }
+    
+    [Benchmark]
+    public string UsingMemory()
+    {
+        var etagHeaderValue = EntityTagHeaderValue.Parse(Value);
+
+        var base64 = etagHeaderValue.Tag.AsMemory();
+        var base64Array = base64.ToArray();
+        var bytes = Convert.FromBase64CharArray(base64Array, 1, base64Array.Length - 2);
+        var tag = Encoding.UTF8.GetString(bytes);
+        return tag[8..^1];
+    }
+    
+    [Benchmark]
+    public ulong ParseStraightBase64()
+    {
+        var etagHeaderValue = EntityTagHeaderValue.Parse(Value);
+        
+        var base64 = etagHeaderValue.Tag.Substring(1, etagHeaderValue.Tag.Length - 2);
+        var bytes = Convert.FromBase64String(base64);
+        return BitConverter.ToUInt64(bytes);
+    }
+}
+
+[MemoryDiagnoser] 
 public class CreateEntityTagHeaderValue
 {
     [Params(1UL, 100UL, ulong.MaxValue)] public ulong Value { get; set; }
@@ -151,6 +228,14 @@ public class CreateEntityTagHeaderValue
         return new EntityTagHeaderValue(new string(base64), isWeak: true);
     }
 
+    [Benchmark]
+    public EntityTagHeaderValue StraightToBase64()
+    {
+        var bytes = BitConverter.GetBytes(Value);
+        var base64 = Convert.ToBase64String(bytes);
+        return new EntityTagHeaderValue($"\"{base64}\"", isWeak: true);
+    }
+    
     private static int ToBase64_CalculateAndValidateOutputLength(int inputLength)
     {
         // the base length - we want integer division here, at most 4 more chars for the remainder
